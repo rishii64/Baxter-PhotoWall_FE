@@ -24,43 +24,34 @@ if (isPostPage) {
   // profile-image upload
   profileInput.addEventListener("change", () => {
     const file = profileInput.files[0];
-
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       alert("Please upload a valid profile image.");
       profileInput.value = "";
       return;
     }
-
     if (profileFileName) profileFileName.textContent = file.name;
-
     const reader = new FileReader();
-
     reader.onload = (e) => {
       profileImageData = e.target.result;
 
       // Replace icon with image
       profilePreview.innerHTML = `<img src="${profileImageData}" class="w-full h-full object-fit rounded-xl" />`;
     };
-
     reader.readAsDataURL(file);
   });
 
   // Image Selection & Preview
   imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
-
     if (file) {
       // Update file name text if the element exists
       if (fileNameSpan) fileNameSpan.textContent = file.name;
-
       if (!file.type.startsWith("image/")) {
         alert("Please upload a valid image file.");
         imageInput.value = "";
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (e) => {
         imagePreview.src = e.target.result;
@@ -77,7 +68,13 @@ if (isPostPage) {
   // 2. Handle Form Submission
   postForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    // 1. Select the button and show loading state
+    const submitBtn = postForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
 
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+    submitBtn.classList.add("opacity-50", "cursor-not-allowed");
     const name = nameInput.value.trim();
     const empID = employeeId.value.trim();
     const phTitle = photoTitle.value.trim();
@@ -169,7 +166,8 @@ if (isWallPage) {
 // ------------------------------------------------
 async function savePost(post) {
   try {
-    const response = await fetch(`${backend_URI}/api/posts`, {
+    const response = await fetch(`https://baxter-pw.vercel.app/api/posts`, {
+    // const response = await fetch(`http://localhost:5000/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -191,7 +189,8 @@ async function savePost(post) {
 }
 async function getPosts() {
   try {
-    const res = await fetch(`${backend_URI}/api/posts`);
+    const res = await fetch(`https://baxter-pw.vercel.app/api/posts`);
+    // const res = await fetch(`http://localhost:5000/api/posts`);
     return await res.json();
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -247,10 +246,10 @@ function renderPost(post, container) {
       <div class="flex gap-4 items-start flex-1">
         <!-- Profile Image -->
         <div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-[#3e6b4f] flex-shrink-0 flex items-center justify-center">
-          ${post.profileImage 
-            ? `<img src="${post.profileImage}" class="w-full h-full object-cover" />`
-            : `<i class="fa-solid fa-user text-3xl md:text-5xl text-white"></i>`
-          }
+          ${post.profileImage
+      ? `<img src="${post.profileImage}" class="w-full h-full object-cover" />`
+      : `<i class="fa-solid fa-user text-3xl md:text-5xl text-white"></i>`
+    }
         </div>
 
         <!-- Text Content -->
@@ -275,11 +274,11 @@ function renderPost(post, container) {
           <i class="fa-solid fa-heart"></i>
         </button>
         
-        ${post.image 
-          ? `<div class="w-32 h-32 md:w-48 md:h-36 rounded-xl overflow-hidden border shadow-sm">
+        ${post.image
+      ? `<div class="w-32 h-32 md:w-48 md:h-36 rounded-xl overflow-hidden border shadow-sm">
                <img src="${post.image}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" />
-             </div>` 
-          : ''}
+             </div>`
+      : ''}
       </div>
     </div>
   `;
