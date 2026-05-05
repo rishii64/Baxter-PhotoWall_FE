@@ -1,6 +1,7 @@
 const isPostPage = document.getElementById("postForm") !== null;
 const isWallPage = document.getElementById("postWall") !== null;
 const totalComments = document.getElementById("totalComments");
+const backend_URI = "https://baxter-pw.vercel.app";
 
 // SECTION 1: POST PAGE
 if (isPostPage) {
@@ -168,7 +169,7 @@ if (isWallPage) {
 // ------------------------------------------------
 async function savePost(post) {
   try {
-    const response = await fetch("http://localhost:5000/api/posts", {
+    const response = await fetch(`${backend_URI}/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -190,7 +191,7 @@ async function savePost(post) {
 }
 async function getPosts() {
   try {
-    const res = await fetch("http://localhost:5000/api/posts");
+    const res = await fetch(`${backend_URI}/api/posts`);
     return await res.json();
   } catch (error) {
     console.error("Error fetching posts:", error);
