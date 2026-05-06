@@ -43,29 +43,29 @@
         </p>
 
         <!-- BADGES -->
-        <div class="flex flex-wrap justify-center gap-3 mt-6 text-green-900">
+        <div class="flex flex-wrap justify-center gap-3 mt-6 font-bold text-green-900">
             <div class="bg-[#e4efe6] px-4 py-2 rounded-xl flex gap-2 text-sm">
                 <i class="fa-solid fa-camera text-3xl"></i>
                 <div class="flex flex-col items-start">
-                    Capture <br><span class="text-xs"> Green Moments</span>
+                    Capture <br><span class="text-xs font-thin"> Green Moments</span>
                 </div>
             </div>
             <div class="bg-[#e4efe6] px-6 py-2 rounded-xl flex gap-2 text-sm">
                 <i class="fa-regular fa-comment-dots text-3xl -scale-x-100"></i>
                 <div class="flex flex-col items-start">
-                    Share <br><span class="text-xs"> Your Story </span>
+                    Share <br><span class="text-xs font-thin"> Your Story </span>
                 </div>
             </div>
             <div class="bg-[#e4efe6] px-10 py-2 rounded-xl flex gap-2 text-sm">
                 <i class="fa-regular fa-lightbulb text-3xl"></i>
                 <div class="flex flex-col items-start">
-                    Inspire <br><span class="text-xs"> Change </span>
+                    Inspire <br><span class="text-xs font-thin"> Change </span>
                 </div>
             </div>
             <div class="bg-[#e4efe6] px-4 py-2 rounded-xl flex gap-2 text-sm">
                 <i class="fa-solid fa-trophy text-3xl"></i>
                 <div class="flex flex-col items-start">
-                    Win <br><span class="text-xs"> Exciting Prizes </span>
+                    Win <br><span class="text-xs font-thin"> Exciting Prizes </span>
                 </div>
             </div>
         </div>
@@ -73,16 +73,13 @@
 
     <!-- MAIN GRID -->
     <div class="max-w-7xl mx-auto px-4 md:px-8 mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
         <!-- LEFT (FORM) -->
         <div class="lg:col-span-2">
             <form id="postForm" class="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-6 md:p-10 space-y-6 border">
-                <!-- TOP ROW -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
                     <!-- PROFILE IMAGE -->
                     <div>
-                        <label class="block text-sm mb-2">Add Profile Image</label>
+                        <label class="block text-sm mb-2">Photographer (Your Photo)</label>
                         <div class="flex gap-5">
                             <div id="profilePreview"
                                 class="bg-[#e4efe6] h-20 w-20 flex items-center justify-center rounded-xl overflow-hidden">
@@ -96,7 +93,7 @@
                                 </label>
 
                                 <span id="profileFileName" class="text-xs text-gray-500 m-1">No file chosen</span>
-                                <input type="file" id="profileInput" accept="image/*" class="hidden" required />
+                                <input type="file" id="profileInput" accept="image/*" class="hidden" />
                             </div>
                         </div>
                     </div>
@@ -104,14 +101,14 @@
                     <!-- NAME -->
                     <div>
                         <label class="block text-sm mb-2">Your Name</label>
-                        <input id="name" type="text" placeholder="Enter your name..."
+                        <input id="name" type="text" placeholder="Enter your name..." required
                             class="w-full border-2 border-dashed rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40" />
                     </div>
 
                     <!-- EMPLOYEE ID -->
                     <div>
                         <label class="block text-sm mb-2">Employee ID</label>
-                        <input id="empID" type="text" placeholder="Enter your employee ID..."
+                        <input id="empID" type="text" placeholder="Enter your employee ID..." required
                             class="w-full border-2 border-dashed rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40" />
                     </div>
                 </div>
@@ -119,13 +116,13 @@
                 <!-- TITLE -->
                 <div>
                     <label class="block text-sm mb-2">Title Of Your Photo</label>
-                    <input id="photoTitle" type="text" placeholder="Enter a title for your photo..."
+                    <input id="photoTitle" type="text" placeholder="Enter a title for your photo..." required
                         class="w-full border-2 border-dashed rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40" />
                 </div>
 
                 <!-- Image UPLOAD -->
                 <div>
-                    <label class="block text-sm mb-2">Upload Image</label>
+                    <label class="block text-sm mb-2">Upload Your Clicked Photo</label>
                     <div class="flex items-center gap-4 border-2 border-dashed rounded-xl p-4 bg-[#f7faf7]">
                         <div class="bg-[#e4efe6] px-3 py-2 rounded-lg text-3xl">
                             <i class="fa-regular fa-image"></i>
@@ -138,7 +135,7 @@
                             </label>
 
                             <span id="fileName" class="text-xs text-gray-500 m-1">No file chosen</span>
-                            <input type="file" id="imageInput" accept="image/*" class="hidden" required />
+                            <input type="file" id="imageInput" accept="image/*" class="hidden" />
                         </div>
 
                     </div>
@@ -148,19 +145,18 @@
                 <!-- STORY -->
                 <div>
                     <label class="block text-sm mb-2">Story Behind the Photo</label>
-                    <textarea id="commentInput" rows="4" placeholder="Tell us the story behind your photo..."
+                    <textarea id="commentInput" rows="4" placeholder="Tell us the story behind your photo ( max 150 words )..."
                         class="w-full border-2 border-dashed rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40 resize-none"></textarea>
                 </div>
 
                 <!-- SUBMIT -->
                 <button type="submit"
                     class="w-full bg-[#3e6b4f] text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-leaf"></i> Submit Your Green Moment
+                    <i class="fa-solid fa-leaf mr-2"></i> Submit Your Green Moment
                 </button>
-
             </form>
 
-            <div class="bg-[#e4efe6] my-5 p-5 rounded-2xl text-sm text-green-700 flex gap-3 items-center">
+            <div class="bg-[#e4efe6] my-5 p-5 rounded-2xl text-sm text-green-800 flex gap-3 items-center">
                 <div
                     class="py-2 mx-4 bg-[#B6CEBB] text-green-900 w-12 h-12 flex justify-center items-center rounded-full">
                     <i class="fa-solid fa-medal text-2xl -scale-100"></i>
@@ -179,7 +175,7 @@
                 <i class="fa-regular fa-calendar-days text-5xl text-green-900"></i>
                 <div>
                     <p class="font-semibold text-[#3e6b4f]">Submission Deadline</p>
-                    <p class="text-sm text-gray-600 mt-1">20th June 2025, 5:00 PM</p>
+                    <p class="text-sm text-gray-600 mt-1">20th June 2026, 5:00 PM</p>
                 </div>
             </div>
 
@@ -208,86 +204,3 @@
 </body>
 
 </html>
-
-<!-- <body class="bg-[#eef3ec] text-gray-800 bg-fixed bg-cover bg-center"
-    style="background-image: url('./assets/Baxter_bg1.png');">
-
-    <header class="flex justify-between items-center px-6 md:px-12 py-5 bg-[#3e6b4f] text-white">
-        <h1 class="text-2xl tracking-widest font-semibold">
-            <a href="index.html">BAXTER</a>
-        </h1>
-
-        <a href="wall.html"
-            class="border border-white border-2 px-4 py-2 rounded-xl text-sm hover:bg-white hover:text-[#3e6b4f] transition">
-            <i class="fa-regular fa-message mr-1"></i> See Comments
-        </a>
-    </header>
-
-    <section class="text-center px-6 mt-20">
-        <h2 class="relative inline-block md:text-4xl font-semibold text-[#3e6b4f]">
-            Upload Photo
-            <span class="absolute -top-1 -right-6 text-lg rotate-12">🌿</span>
-        </h2>
-
-        <p class="mt-3 text-gray-600 max-w-xl mx-auto text-sm md:text-base">
-            Click a beautiful photograph that showcases <br>
-            that essence of nature and upload it.
-        </p>
-    </section>
-
-    <div class="max-w-4xl mx-auto mt-10 px-4">
-        <form id="postForm"
-            class="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl p-6 md:p-10 space-y-6 border border-gray-200">
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700">Your Name</label>
-                <input type="text" placeholder="Enter your name..." id="name"
-                    class="w-full border border-dashed border-2 border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40" />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700">Upload Image</label>
-
-                <div
-                    class="flex items-center gap-4 border border-dashed border-2 border-gray-300 rounded-xl p-4 py-5 bg-[#f7faf7]">
-                    <div class="bg-[#e4efe6] px-3 py-2 rounded-lg">
-                        <i class="fa-regular fa-image text-4xl"></i>
-                    </div>
-
-                    <div class="flex flex-col gap-1 ml-3">
-                        <label for="imageInput"
-                            class="cursor-pointer bg-[#3e6b4f] text-white px-4 py-1.5 rounded-lg text-sm hover:opacity-90 transition inline-block w-fit">
-                            Choose file
-                        </label>
-
-                        <span id="fileName" class="text-xs text-gray-500">
-                            No file chosen
-                        </span>
-
-                        <input type="file" id="imageInput" accept="image/*" class="hidden" required />
-                    </div>
-                </div>
-
-                <img id="imagePreview" class="mt-4 mx-auto rounded-xl border hidden max-h-64 object-cover" />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700">Your Thought</label>
-
-                <textarea id="commentInput" rows="4" placeholder="Write your thoughts about World Environment Day..."
-                    class="w-full border border-dashed border-2 border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3e6b4f]/40 resize-none"></textarea>
-            </div>
-
-            <button type="submit"
-                class="w-full bg-[#3e6b4f] text-white py-3 rounded-xl font-medium hover:opacity-90 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-leaf"></i> Post To Wall
-            </button>
-        </form>
-    </div>
-
-    <p class="text-center text-gray-600 my-10 text-sm px-6">
-        <i class="fa-solid fa-leaf -scale-x-100"></i> Let’s celebrate our planet and take a step towards a greener
-        tomorrow.
-    </p>
-
-    <script src="script.js"></script>
-</body> -->

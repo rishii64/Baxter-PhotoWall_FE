@@ -1,7 +1,34 @@
 const isPostPage = document.getElementById("postForm") !== null;
 const isWallPage = document.getElementById("postWall") !== null;
 const totalComments = document.getElementById("totalComments");
-const backend_URI = "https://baxter-pw.vercel.app";
+// const backend_URI = "https://baxter-pw.vercel.app";
+
+// TOAST NOTIFICATION FUNCTION
+function showToast(message, type = 'error') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'fixed top-5 right-5 z-50 flex flex-col gap-3';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-[#3e6b4f]' : 'bg-red-500';
+  const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+  
+  toast.className = `${bgColor} text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0`;
+  toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-sm font-medium">${message}</span>`;
+  
+  container.appendChild(toast);
+
+  setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+
+  setTimeout(() => {
+    toast.classList.add('translate-x-full', 'opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 
 // SECTION 1: POST PAGE
 if (isPostPage) {
@@ -25,20 +52,19 @@ if (isPostPage) {
   profileInput.addEventListener("change", () => {
     const file = profileInput.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload a valid profile image.");
-      profileInput.value = "";
-      return;
-    }
-    if (profileFileName) profileFileName.textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profileImageData = e.target.result;
-
-      // Replace icon with image
-      profilePreview.innerHTML = `<img src="${profileImageData}" class="w-full h-full object-fit rounded-xl" />`;
-    };
-    reader.readAsDataURL(file);
+      if (!file.type.startsWith("image/")) {
+        showToast("Please upload a valid profile image.", "error");
+        profileInput.value = "";
+        return;
+      }
+      if (profileFileName) profileFileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        profileImageData = e.target.result;
+        // Replace icon with image
+        profilePreview.innerHTML = `<img src="${profileImageData}" class="w-full h-full object-fit rounded-xl" />`;
+      };
+      reader.readAsDataURL(file);
   });
 
   // Image Selection & Preview
@@ -48,7 +74,7 @@ if (isPostPage) {
       // Update file name text if the element exists
       if (fileNameSpan) fileNameSpan.textContent = file.name;
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
+        showToast("Please upload a valid image file.", "error");
         imageInput.value = "";
         return;
       }
@@ -82,7 +108,11 @@ if (isPostPage) {
     const file = imageInput.files[0];
 
     if (!file) {
-      alert("Please upload an image.");
+      showToast("Please upload all fields.", "error");
+      // Revert button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+      submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
       return;
     }
 
@@ -102,13 +132,29 @@ if (isPostPage) {
 
       const saved = await savePost(newPost);
       if (!saved) {
-        alert("There was a problem saving your post. Please try again.");
+        showToast("There was a problem saving your post. Please try again.", "error");
+        // Revert button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
         return;
       }
 
       postForm.reset();
       imagePreview.classList.add("hidden");
-      alert("Post uploaded successfully!");
+      
+      // Reset profile preview and labels
+      profilePreview.innerHTML = `<i id="profileIcon" class="fa-regular fa-user text-4xl text-gray-600"></i>`;
+      profileFileName.textContent = "No file chosen";
+      fileNameSpan.textContent = "No file chosen";
+      profileImageData = null;
+      
+      // Revert button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+      submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      
+      showToast("Post uploaded successfully!", "success");
 
       // window.location.href = "wall.html";
     };
@@ -120,36 +166,61 @@ if (isPostPage) {
 // SECTION 2: WALL PAGE
 if (isWallPage) {
   const postWall = document.getElementById("postWall");
+  
+  let currentPage = 1;
+  let totalPostsCount = 0;
+  
+  const postsContainer = document.createElement("div");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
+  
+  postWall.appendChild(postsContainer);
 
-  // const posts = getPosts();
-
-  (async () => {
-    const posts = await getPosts();
-
-    if (!posts || posts.length === 0) {
-      postWall.innerHTML = `<p class="text-center text-gray-400 mt-10">No posts yet.</p>`;
+  const loadPosts = async () => {
+    if (currentPage === 1) {
+      postsContainer.innerHTML = `<p class="text-center text-[#3e6b4f] mt-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading moments...</p>`;
     } else {
-      postWall.innerHTML = "";
-      posts.forEach(post => renderPost(post, postWall));
-      // [...posts].reverse().forEach(post => renderPost(post, postWall));
+      loadMoreBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...`;
+      loadMoreBtn.disabled = true;
     }
+
+    const data = await getPosts(currentPage);
+    
+    // Fallback logic in case the Vercel backend hasn't updated yet
+    const isArrayFormat = Array.isArray(data);
+    const posts = isArrayFormat ? data : (data.posts || []);
+    totalPostsCount = isArrayFormat ? data.length : (data.total || 0);
 
     if (totalComments) {
-      totalComments.innerText = posts.length;
+      totalComments.innerText = totalPostsCount;
     }
-  })();
 
-  // if (posts.length === 0) {
-  //   postWall.innerHTML = `
-  //       <p class="text-center text-gray-400 mt-10">
-  //         No posts yet.
-  //       </p>`;
-  // } else {
-  //   posts.reverse().forEach((post) => renderPost(post, postWall));
-  // }
+    if (currentPage === 1) {
+      postsContainer.innerHTML = "";
+    }
 
-  // Total Posts
-  totalComments.innerText = posts.length
+    if (posts.length === 0 && currentPage === 1) {
+      postsContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">No posts yet.</p>`;
+    } else {
+      posts.forEach(post => renderPost(post, postsContainer));
+    }
+
+    // Handle "Load More" button visibility
+    if (currentPage * 5 >= totalPostsCount) {
+      loadMoreBtn.classList.add("hidden");
+    } else {
+      loadMoreBtn.classList.remove("hidden");
+      loadMoreBtn.innerText = "Load More Comments";
+      loadMoreBtn.disabled = false;
+    }
+  };
+
+  loadMoreBtn.addEventListener("click", () => {
+    currentPage++;
+    loadPosts();
+  });
+
+  // Initial load
+  loadPosts();
 }
 
 // SECTION 3: STORAGE FUNCTIONS
@@ -167,7 +238,7 @@ if (isWallPage) {
 async function savePost(post) {
   try {
     const response = await fetch(`https://baxter-pw.vercel.app/api/posts`, {
-    // const response = await fetch(`http://localhost:5000/api/posts`, {
+      // const response = await fetch(`http://localhost:5000/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -187,58 +258,21 @@ async function savePost(post) {
     return false;
   }
 }
-async function getPosts() {
+async function getPosts(page = 1, limit = 5) {
   try {
-    const res = await fetch(`https://baxter-pw.vercel.app/api/posts`);
-    // const res = await fetch(`http://localhost:5000/api/posts`);
+    const res = await fetch(`https://baxter-pw.vercel.app/api/posts?page=${page}&limit=${limit}`);
+    // const res = await fetch(`http://localhost:5000/api/posts?page=${page}&limit=${limit}`);
     return await res.json();
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return [];
+    return { posts: [], total: 0 };
   }
 }
 
 // SECTION 4: RENDER POST
-// function renderPost(post, container) {
-//   const postCard = document.createElement("div");
-
-//   postCard.className = "bg-white border rounded-xl p-4 shadow-sm space-y-3";
-//   // const displayDate = post.date ? new Date(post.date).toLocaleString() : "Unknown Date";
-//   postCard.innerHTML = `
-//         <div class="bg-white rounded-2xl p-5 shadow-sm border flex justify-between items-center gap-4">
-
-//       <div class="flex gap-4 items-start">
-//         <div class="w-20 h-20 rounded-full overflow-hidden bg-[#3e6b4f] flex items-center justify-center">
-//           ${post.profileImage ? `<img src="${post.profileImage}" class="w-full h-full object-cover" />`
-//       : `<i class="fa-solid fa-user text-5xl text-white"></i>`}
-//         </div>
-
-//         <div class="max-w-[40%]">
-//           <div class="flex items-center gap-4 text-lg">
-//             <span class="font-medium text-[#3e6b4f]">${post?.name || "Anonymous"}</span>
-//             <span class="text-gray-400">•</span>
-//             <span class="text-gray-400 text-xs">${post.date}</span>
-//           </div>
-
-//           <p class="text-md text-gray-600 mt-1">
-//             ${post.comment}
-//           </p>
-//         </div>
-//       </div>
-
-//       <div class="flex items-center gap-4">
-//         <span class="text-[#3e6b4f] text-lg">❤</span>
-//         ${post.image ? `<img src="${post.image}" class="w-28 h-24 rounded-lg object-cover"/>` : ''}
-//       </div>
-//     </div>
-//     `;
-
-//   container.appendChild(postCard);
-// }
 function renderPost(post, container) {
   const postCard = document.createElement("div");
-  postCard.className = "mb-4"; // Spacing between cards
-
+  postCard.className = "mb-4";
   postCard.innerHTML = `
     <div class="bg-white rounded-2xl p-5 shadow-sm border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       
