@@ -10,7 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body {font-family: 'Inter', sans-serif;}
+        body {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 
@@ -38,21 +40,23 @@
                 <h2 class="relative inline-block font-semibold text-[#3e6b4f] text-3xl">Comments
                     <span class="absolute -top-1 -right-6 text-sm rotate-12">🌿</span>
                 </h2>
-                <p class="text-sm text-gray-600 mt-2">
+                <p class="text-sm text-gray-600 mt-4">
                     See what others are thinking about <br>
-                    <span class="text-[#3e6b4f] font-medium">World Environment Day.</span>
+                    <span class="text-[#3e6b4f] font-semibold text-green-900">World Environment Day.</span>
                 </p>
             </div>
 
-            <div class="bg-white rounded-xl p-5 border shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="bg-[#e4efe6] p-3 rounded-lg">💬</div>
+            <div class=" flex flex-col items-center md:items-start bg-white rounded-xl p-5 border shadow-sm">
+                <div class="flex items-center gap-10 md:gap-3">
+                    <div class="bg-[#e4efe6] px-3 py-2 rounded-full">
+                        <i class="fa-regular fa-comment-dots text-2xl"></i>
+                    </div>
                     <div>
-                        <p class="text-sm text-gray-500">Total Comments</p>
-                        <p id="totalComments" class="text-xl font-semibold text-[#3e6b4f]">0</p>
+                        <p class="text-sm text-green-800 font-semibold">Total Comments</p>
+                        <p id="totalComments" class="text-2xl font-bold text-[#3e6b4f] ml-1">0</p>
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">
+                <p class="text-xs text-green-800 opacity-70 mt-2">
                     Voices for a greener tomorrow
                 </p>
             </div>
@@ -60,7 +64,8 @@
 
         <div class="md:col-span-2 space-y-6">
             <div id="postWall" class="space-y-6"> </div>
-            <button id="loadMoreBtn" class="w-full bg-[#3e6b4f] text-white py-3 rounded-xl hover:opacity-90 transition hidden">
+            <button id="loadMoreBtn"
+                class="w-full bg-[#3e6b4f] text-white py-3 rounded-xl hover:opacity-90 transition hidden">
                 ⟳ Load More Comments
             </button>
         </div>
