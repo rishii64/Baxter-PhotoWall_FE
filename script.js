@@ -264,12 +264,16 @@ async function getPosts(page = 1, limit = 5) {
   }
 }
 
+window.postRegistry = window.postRegistry || new Map();
+
 // SECTION 4: RENDER POST
 function renderPost(post, container) {
   const postCard = document.createElement("div");
   postCard.className = "mb-4";
   const elementId = `post-${post._id || post.id || Math.random().toString(36).substr(2, 9)}`;
-  const safeName = (post?.name || "Anonymous").replace(/'/g, "\\'");
+  
+  // Store post in registry for clean downloading
+  window.postRegistry.set(elementId, post);
   
   postCard.innerHTML = `
     <div id="${elementId}" class="bg-white rounded-2xl p-5 shadow-sm border flex flex-col md:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
@@ -307,10 +311,10 @@ function renderPost(post, container) {
             <i class="fa-solid fa-heart"></i>
           </button>
           <div class="flex flex-row lg:flex-col gap-2">
-            <button onclick="downloadPostAs('${elementId}', 'jpg', '${safeName}')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+            <button onclick="downloadPostAs('${elementId}', 'jpg')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
               <i class="fa-solid fa-image mr-1.5"></i> JPG
             </button>
-            <button onclick="downloadPostAs('${elementId}', 'pdf', '${safeName}')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+            <button onclick="downloadPostAs('${elementId}', 'pdf')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
               <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF
             </button>
           </div>
@@ -330,29 +334,88 @@ function renderPost(post, container) {
 }
 
 // SECTION 5: DOWNLOAD LOGIC
-async function downloadPostAs(elementId, format, userName) {
-  const element = document.getElementById(elementId);
-  if (!element) return;
-
-  const originalBorder = element.style.border;
-  const originalShadow = element.style.boxShadow;
-  
-  // Tweak styles slightly for better rendering
-  element.style.border = "none";
-  element.style.boxShadow = "none";
+async function downloadPostAs(elementId, format) {
+  const post = window.postRegistry.get(elementId);
+  if (!post) {
+    showToast("Post data not found.", "error");
+    return;
+  }
 
   showToast(`Generating ${format.toUpperCase()}... Please wait.`, "success");
 
+  // Create a hidden template with the requested Facebook-style vertical layout
+  const printContainer = document.createElement("div");
+  printContainer.style.position = "absolute";
+  printContainer.style.left = "-9999px";
+  printContainer.style.top = "-9999px";
+  printContainer.style.width = "800px"; // Fixed width for high-quality consistent rendering
+  printContainer.style.backgroundColor = "#ffffff";
+  printContainer.style.padding = "40px";
+  printContainer.style.boxSizing = "border-box";
+  printContainer.style.fontFamily = "'Inter', sans-serif";
+
+  const safeName = post.name || "Anonymous";
+
+  printContainer.innerHTML = `
+    <!-- Top: Profile Info -->
+    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
+      ${post.profileImageUrl
+        ? `<img src="${post.profileImageUrl}" crossorigin="anonymous" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #e4efe6;" />`
+        : `<div style="width: 70px; height: 70px; border-radius: 50%; background-color: #3e6b4f; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px;"><i class="fa-solid fa-user"></i></div>`
+      }
+      <div>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 600; color: #3e6b4f;">${safeName}</h2>
+        <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 15px;">${post.date}</p>
+      </div>
+    </div>
+
+    <!-- Middle: Post Content -->
+    <div style="margin-bottom: 24px;">
+      ${post.phTitle ? `<h3 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 600; color: #1f2937;">${post.phTitle}</h3>` : ''}
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4b5563; text-align: justify; white-space: pre-wrap;">${post.comment}</p>
+    </div>
+
+    <!-- Bottom: Main Photo (Large/Original style) -->
+    ${post.imageUrl ? `
+      <div style="width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; display: flex; justify-content: center; background-color: #f9fafb;">
+        <img src="${post.imageUrl}" crossorigin="anonymous" style="max-width: 100%; height: auto; object-fit: contain; display: block; margin: 0 auto;" />
+      </div>
+    ` : ''}
+  `;
+
+  document.body.appendChild(printContainer);
+
   try {
-    const canvas = await html2canvas(element, {
-      scale: window.devicePixelRatio * 2, // High quality scaling
-      useCORS: true,                      // Crucial for S3 cross-origin images
+    // Wait for all dynamically injected images to fully load before capturing
+    const images = Array.from(printContainer.querySelectorAll('img'));
+    let maxNaturalWidth = 800; // Base template width
+    
+    await Promise.all(images.map(img => new Promise((resolve) => {
+      if (img.complete) {
+        if (img.naturalWidth > maxNaturalWidth) maxNaturalWidth = img.naturalWidth;
+        return resolve();
+      }
+      img.onload = () => {
+        if (img.naturalWidth > maxNaturalWidth) maxNaturalWidth = img.naturalWidth;
+        resolve();
+      };
+      img.onerror = resolve; // Continue even if one fails
+    })));
+
+    // Calculate scale to ensure 100% original quality of the largest image is maintained
+    // e.g., if image is 4000px wide and template is 800px, scale will be 5, drawing it at true 4000px.
+    const requiredScale = Math.max(window.devicePixelRatio * 2, maxNaturalWidth / 800);
+
+    // Generate high quality canvas
+    const canvas = await html2canvas(printContainer, {
+      scale: requiredScale, // Dynamically scaled to retain original image resolution
+      useCORS: true,
       backgroundColor: "#ffffff",
       logging: false
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 1.0);
-    const fileName = `Baxter_${userName.replace(/\s+/g, '_')}_Post`;
+    const imgData = canvas.toDataURL("image/jpeg", 1.0); // Maximum JPG quality
+    const fileName = `Baxter_${safeName.replace(/\s+/g, '_')}_Post`;
 
     if (format === 'jpg') {
       const link = document.createElement('a');
@@ -361,7 +424,6 @@ async function downloadPostAs(elementId, format, userName) {
       link.click();
     } else if (format === 'pdf') {
       const { jsPDF } = window.jspdf;
-      // Calculate PDF dimensions based on canvas aspect ratio
       const pdf = new jsPDF({
         orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
         unit: 'px',
@@ -376,7 +438,7 @@ async function downloadPostAs(elementId, format, userName) {
     console.error("Error generating download:", error);
     showToast("Failed to download post.", "error");
   } finally {
-    element.style.border = originalBorder;
-    element.style.boxShadow = originalShadow;
+    // Clean up hidden template
+    document.body.removeChild(printContainer);
   }
 }
