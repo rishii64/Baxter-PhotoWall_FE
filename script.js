@@ -61,7 +61,11 @@ if (isPostPage) {
         return;
       }
 
-      if (!file.type.startsWith("image/")) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'bmp', 'svg', 'tiff', 'tif'];
+      const isImage = file.type.startsWith("image/") || allowedExts.includes(ext);
+
+      if (!isImage) {
         showToast(errorMsg, "error");
         input.value = "";
         return;
