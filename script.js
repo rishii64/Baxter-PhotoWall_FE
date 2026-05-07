@@ -271,10 +271,10 @@ function renderPost(post, container) {
   const postCard = document.createElement("div");
   postCard.className = "mb-4";
   const elementId = `post-${post._id || post.id || Math.random().toString(36).substr(2, 9)}`;
-  
+
   // Store post in registry for clean downloading
   window.postRegistry.set(elementId, post);
-  
+
   postCard.innerHTML = `
     <div id="${elementId}" class="bg-white rounded-2xl p-5 shadow-sm border flex flex-col md:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
       
@@ -283,9 +283,9 @@ function renderPost(post, container) {
         <!-- Profile Image -->
         <div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-[#3e6b4f] flex-shrink-0 flex items-center justify-center">
           ${post.profileImageUrl
-            ? `<img src="${post.profileImageUrl}" crossorigin="anonymous" alt="${post.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />`
-            : `<i class="fa-solid fa-user text-3xl md:text-5xl text-white"></i>`
-          }
+      ? `<img src="${post.profileImageUrl}" crossorigin="anonymous" alt="${post.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />`
+      : `<i class="fa-solid fa-user text-3xl md:text-5xl text-white"></i>`
+    }
         </div>
 
         <!-- Text Content -->
@@ -306,26 +306,21 @@ function renderPost(post, container) {
 
       <!-- Uploaded Image & Interaction Section -->
       <div class="flex flex-col lg:flex-row items-center gap-4 self-center">
-        <div class="flex flex-row lg:flex-col gap-2 items-end items-center" data-html2canvas-ignore>
-          <button class="text-gray-300 hover:text-red-500 transition-colors text-2xl mb-2">
-            <i class="fa-solid fa-heart"></i>
+        <div class="flex flex-row lg:flex-col gap-2">
+          <button onclick="downloadPostAs('${elementId}', 'jpg')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+            <i class="fa-solid fa-image mr-1.5"></i> JPG
           </button>
-          <div class="flex flex-row lg:flex-col gap-2">
-            <button onclick="downloadPostAs('${elementId}', 'jpg')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
-              <i class="fa-solid fa-image mr-1.5"></i> JPG
-            </button>
-            <button onclick="downloadPostAs('${elementId}', 'pdf')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
-              <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF
-            </button>
-          </div>
+          <button onclick="downloadPostAs('${elementId}', 'pdf')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+            <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF
+          </button>
         </div>
         
         ${post.imageUrl
-          ? `<div class="w-full h-full contain lg:w-48 lg:h-36 rounded-xl overflow-hidden border shadow-sm">
+      ? `<div class="w-full h-full contain lg:w-48 lg:h-36 rounded-xl overflow-hidden border shadow-sm">
                <img src="${post.imageUrl}" crossorigin="anonymous" alt="${post.phTitle}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" onerror="this.style.display='none'" />
              </div>`
-          : ''
-        }
+      : ''
+    }
       </div>
     </div>
   `;
@@ -358,15 +353,12 @@ async function downloadPostAs(elementId, format) {
 
   printContainer.innerHTML = `
     <!-- Top: Profile Info -->
-    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
+    <div style="display: flex; align-items: top; gap: 20px; margin-bottom: 24px;">
       ${post.profileImageUrl
         ? `<img src="${post.profileImageUrl}" crossorigin="anonymous" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #e4efe6;" />`
         : `<div style="width: 70px; height: 70px; border-radius: 50%; background-color: #3e6b4f; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px;"><i class="fa-solid fa-user"></i></div>`
       }
-      <div>
         <h2 style="margin: 0; font-size: 26px; font-weight: 600; color: #3e6b4f;">${safeName}</h2>
-        <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 15px;">${post.date}</p>
-      </div>
     </div>
 
     <!-- Middle: Post Content -->
@@ -389,7 +381,7 @@ async function downloadPostAs(elementId, format) {
     // Wait for all dynamically injected images to fully load before capturing
     const images = Array.from(printContainer.querySelectorAll('img'));
     let maxNaturalWidth = 800; // Base template width
-    
+
     await Promise.all(images.map(img => new Promise((resolve) => {
       if (img.complete) {
         if (img.naturalWidth > maxNaturalWidth) maxNaturalWidth = img.naturalWidth;
@@ -432,7 +424,7 @@ async function downloadPostAs(elementId, format) {
       pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
       pdf.save(`${fileName}.pdf`);
     }
-    
+
     showToast(`Successfully downloaded as ${format.toUpperCase()}!`, "success");
   } catch (error) {
     console.error("Error generating download:", error);
