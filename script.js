@@ -268,15 +268,18 @@ async function getPosts(page = 1, limit = 5) {
 function renderPost(post, container) {
   const postCard = document.createElement("div");
   postCard.className = "mb-4";
+  const elementId = `post-${post._id || post.id || Math.random().toString(36).substr(2, 9)}`;
+  const safeName = (post?.name || "Anonymous").replace(/'/g, "\\'");
+  
   postCard.innerHTML = `
-    <div class="bg-white rounded-2xl p-5 shadow-sm border flex flex-col md:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
+    <div id="${elementId}" class="bg-white rounded-2xl p-5 shadow-sm border flex flex-col md:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
       
       <!-- User Info & Story Section -->
       <div class="flex gap-4 items-start flex-1">
         <!-- Profile Image -->
         <div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-[#3e6b4f] flex-shrink-0 flex items-center justify-center">
           ${post.profileImageUrl
-            ? `<img src="${post.profileImageUrl}" alt=${post.name} class="w-full h-full object-cover onerror="this.style.display='none'" />`
+            ? `<img src="${post.profileImageUrl}" crossorigin="anonymous" alt="${post.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />`
             : `<i class="fa-solid fa-user text-3xl md:text-5xl text-white"></i>`
           }
         </div>
@@ -299,13 +302,23 @@ function renderPost(post, container) {
 
       <!-- Uploaded Image & Interaction Section -->
       <div class="flex flex-col lg:flex-row items-center gap-4 self-center">
-        <button class="text-gray-300 hover:text-red-500 transition-colors text-2xl">
-          <i class="fa-solid fa-heart"></i>
-        </button>
+        <div class="flex flex-row lg:flex-col gap-2 items-end items-center" data-html2canvas-ignore>
+          <button class="text-gray-300 hover:text-red-500 transition-colors text-2xl mb-2">
+            <i class="fa-solid fa-heart"></i>
+          </button>
+          <div class="flex flex-row lg:flex-col gap-2">
+            <button onclick="downloadPostAs('${elementId}', 'jpg', '${safeName}')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+              <i class="fa-solid fa-image mr-1.5"></i> JPG
+            </button>
+            <button onclick="downloadPostAs('${elementId}', 'pdf', '${safeName}')" class="text-xs bg-[#e4efe6] text-[#3e6b4f] px-3 py-1.5 rounded-lg hover:bg-[#3e6b4f] hover:text-white transition shadow-sm font-semibold flex items-center">
+              <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF
+            </button>
+          </div>
+        </div>
         
         ${post.imageUrl
           ? `<div class="w-full h-full contain lg:w-48 lg:h-36 rounded-xl overflow-hidden border shadow-sm">
-               <img src="${post.imageUrl}" alt="${post.phTitle}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" onerror="this.style.display='none'" />
+               <img src="${post.imageUrl}" crossorigin="anonymous" alt="${post.phTitle}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" onerror="this.style.display='none'" />
              </div>`
           : ''
         }
@@ -314,4 +327,56 @@ function renderPost(post, container) {
   `;
 
   container.appendChild(postCard);
+}
+
+// SECTION 5: DOWNLOAD LOGIC
+async function downloadPostAs(elementId, format, userName) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const originalBorder = element.style.border;
+  const originalShadow = element.style.boxShadow;
+  
+  // Tweak styles slightly for better rendering
+  element.style.border = "none";
+  element.style.boxShadow = "none";
+
+  showToast(`Generating ${format.toUpperCase()}... Please wait.`, "success");
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: window.devicePixelRatio * 2, // High quality scaling
+      useCORS: true,                      // Crucial for S3 cross-origin images
+      backgroundColor: "#ffffff",
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const fileName = `Baxter_${userName.replace(/\s+/g, '_')}_Post`;
+
+    if (format === 'jpg') {
+      const link = document.createElement('a');
+      link.download = `${fileName}.jpg`;
+      link.href = imgData;
+      link.click();
+    } else if (format === 'pdf') {
+      const { jsPDF } = window.jspdf;
+      // Calculate PDF dimensions based on canvas aspect ratio
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${fileName}.pdf`);
+    }
+    
+    showToast(`Successfully downloaded as ${format.toUpperCase()}!`, "success");
+  } catch (error) {
+    console.error("Error generating download:", error);
+    showToast("Failed to download post.", "error");
+  } finally {
+    element.style.border = originalBorder;
+    element.style.boxShadow = originalShadow;
+  }
 }
